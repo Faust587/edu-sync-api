@@ -9,6 +9,7 @@ export class UserRegisterDto {
   @Type(() => CreateRoleAssignmentDto)
   roles: CreateRoleAssignmentDto[];
 
+  @ValidateNested()
   @Type(() => CreateUserDto)
   user: CreateUserDto;
 }
