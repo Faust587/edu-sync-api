@@ -17,26 +17,26 @@ export class AuthService {
   ) {}
 
   async registerUser(userRegisterDto: UserRegisterDto) {
-    const { password, roles, ...userData } = userRegisterDto;
+    const { roles, user } = userRegisterDto;
 
     const salt = await genSalt(10);
     const hashedPassword = await hash(
-      `${password}${process.env.PASSWORD_HASH_SALT}`,
+      `${user.password}${process.env.PASSWORD_HASH_SALT}`,
       salt,
     );
 
-    const user = await this.userService.createUser({
-      ...userData,
+    const userObj = await this.userService.create({
+      ...user,
       password: hashedPassword,
     });
 
     const userRoles = await this.roleAssignmentService.createRoleAssignment(
       roles,
-      user.id,
+      userObj.id,
     );
 
     const payload: JwtPayloadDto = {
-      id: user.id,
+      id: userObj.id,
       isEmailActivated: user.isEmailActivated,
     };
 
@@ -51,7 +51,7 @@ export class AuthService {
     });
 
     await this.refreshTokenService.createRefreshToken({
-      user: user,
+      user: userObj,
       token: refreshToken,
     });
 
@@ -65,7 +65,7 @@ export class AuthService {
   async loginUser(userLoginDto: UserLoginDto) {
     const { email, password } = userLoginDto;
 
-    const user = await this.userService.getUserByEmail(email);
+    const user = await this.userService.getByEmail(email);
 
     if (!user) {
       throw new BadRequestException('User with this email does not exists');
