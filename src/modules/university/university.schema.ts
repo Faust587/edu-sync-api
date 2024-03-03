@@ -1,6 +1,5 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import { HydratedDocument, Schema as MongooseSchema } from 'mongoose';
-import { User } from '../user/user.schema';
 
 export type UniversityDocument = HydratedDocument<University>;
 
@@ -9,6 +8,7 @@ export type UniversityDocument = HydratedDocument<University>;
     transform: (_, ret) => {
       ret.id = ret._id;
       delete ret._id;
+      delete ret.__v;
     },
   },
   toObject: {
@@ -21,12 +21,8 @@ export type UniversityDocument = HydratedDocument<University>;
 export class University {
   id: string;
 
-  @Prop({
-    required: true,
-    type: MongooseSchema.Types.ObjectId,
-    ref: User.name,
-  })
-  owner: User;
+  @Prop({ required: true, type: MongooseSchema.Types.String, unique: true })
+  name: string;
 }
 
 export const UniversitySchema = SchemaFactory.createForClass(University);
