@@ -1,9 +1,5 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import { HydratedDocument, Schema as MongooseSchema } from 'mongoose';
-import { Role } from '../role/role.schema';
-import { University } from '../university/university.schema';
-import { Faculty } from '../faculty/faculty.schema';
-import { StudyGroup } from '../study-group/study-group.schema';
 
 export type UserDocument = HydratedDocument<User>;
 
@@ -24,6 +20,15 @@ export type UserDocument = HydratedDocument<User>;
   },
 })
 export class User {
+  id: string;
+
+  @Prop({
+    type: MongooseSchema.Types.ObjectId,
+    required: true,
+    unique: false,
+  })
+  university: string;
+
   @Prop({
     type: MongooseSchema.Types.String,
     required: true,
