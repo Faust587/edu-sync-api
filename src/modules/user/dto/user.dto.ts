@@ -8,7 +8,10 @@ import {
 } from 'class-validator';
 import { IsObjectId } from '../../../utils/mongo-object-id.validator';
 
-export class CreateUserDto {
+export class UserDto {
+  @Validate(IsObjectId)
+  id: string;
+
   @Validate(IsObjectId)
   university: string;
 
