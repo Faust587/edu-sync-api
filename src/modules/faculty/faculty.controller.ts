@@ -10,8 +10,13 @@ import {
   Query,
 } from '@nestjs/common';
 import { FacultyService } from './faculty.service';
-import { CreateFacultyDto, GetByIdParams, GetByNameParams } from './dto/index';
-import { UpdateFacultyDto } from './dto/update-faculty.dto';
+import {
+  CreateFacultyDto,
+  UpdateFacultyDto,
+  GetByIdParams,
+  GetByNameParams,
+  QueriesGetAll,
+} from './dto';
 
 @Controller('faculty')
 export class FacultyController {
@@ -19,8 +24,8 @@ export class FacultyController {
 
   @Get('/')
   @HttpCode(200)
-  async getAll(@Query('name') name: string) {
-    return this.facultyService.getAll(name);
+  async getAll(@Query() { name, universityId }: QueriesGetAll) {
+    return this.facultyService.getAll(name, universityId);
   }
 
   @Get('/id/:id')

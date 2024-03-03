@@ -2,8 +2,7 @@ import { BadRequestException, Injectable } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Faculty } from './faculty.schema';
 import { Model } from 'mongoose';
-import { CreateFacultyDto, FacultyDto } from './dto/index';
-import { UpdateFacultyDto } from './dto/update-faculty.dto';
+import { CreateFacultyDto, FacultyDto, UpdateFacultyDto } from './dto';
 
 @Injectable()
 export class FacultyService {
@@ -11,11 +10,16 @@ export class FacultyService {
     @InjectModel(Faculty.name) private facultyModel: Model<Faculty>,
   ) {}
 
-  async getAll(nameFilter?: string): Promise<FacultyDto[]> {
+  async getAll(
+    nameFilter?: string,
+    universityId?: string,
+  ): Promise<FacultyDto[]> {
     const nameRegex = new RegExp(nameFilter ?? '', 'i');
+    const universityIdFilter = universityId ? { university: universityId } : {};
 
     return this.facultyModel.find({
       name: { $regex: nameRegex },
+      ...universityIdFilter,
     });
   }
 
@@ -40,8 +44,11 @@ export class FacultyService {
   }
 
   async create(createFacultyDto: CreateFacultyDto): Promise<FacultyDto> {
-    const { name } = createFacultyDto;
-    const isFacultyWithNameExists = !!(await this.getByName(name));
+    const { name, university } = createFacultyDto;
+    const isFacultyWithNameExists = !!(await this.facultyModel.findOne({
+      name,
+      university,
+    }));
 
     if (isFacultyWithNameExists) {
       throw new BadRequestException('Faculty with this name already exists');
