@@ -2,7 +2,7 @@ import { Injectable } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { RefreshToken } from './refresh-token.schema';
 import { Model } from 'mongoose';
-import { CreateRefreshTokenDto } from './dto/index';
+import { CreateRefreshTokenDto } from './dto';
 
 @Injectable()
 export class RefreshTokenService {
@@ -12,7 +12,8 @@ export class RefreshTokenService {
   ) {}
 
   async createRefreshToken(createRefreshTokenDto: CreateRefreshTokenDto) {
-    return this.refreshTokenModel.create(createRefreshTokenDto);
+    const { userId, token } = createRefreshTokenDto;
+    return this.refreshTokenModel.create({ token, user: userId });
   }
 
   async findRefreshTokenByUserId(id: string) {

@@ -7,13 +7,15 @@ import {
   Validate,
 } from 'class-validator';
 import { IsObjectId } from '../../../utils/mongo-object-id.validator';
+import { UniversityDto } from '../../university/dto';
+import { Type } from 'class-transformer';
 
 export class UserDto {
   @Validate(IsObjectId)
   id: string;
 
-  @Validate(IsObjectId)
-  university: string;
+  @Type(() => UniversityDto)
+  university: UniversityDto;
 
   @IsEmail()
   email: string;
