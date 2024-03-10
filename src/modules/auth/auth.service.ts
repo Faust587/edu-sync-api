@@ -4,20 +4,23 @@ import { UserLoginDto, UserRegisterDto, JwtPayloadDto } from './dto';
 import { genSalt, hash, compare } from 'bcrypt';
 import { JwtService } from '@nestjs/jwt';
 import { RefreshTokenService } from '../refresh-token/refresh-token.service';
-import { RoleAssignmentService } from '../role-assignment/role-assignment.service';
-import { RoleAssignmentDto } from '../role-assignment/dto/role-assignment.dto';
+// import { RoleAssignmentService } from '../role-assignment/role-assignment.service';
+// import { RoleAssignmentDto } from '../role-assignment/dto/role-assignment.dto';
 
 @Injectable()
 export class AuthService {
   constructor(
     private refreshTokenService: RefreshTokenService,
-    private roleAssignmentService: RoleAssignmentService,
+    // private roleAssignmentService: RoleAssignmentService,
     private userService: UserService,
     private jwtService: JwtService,
   ) {}
 
   async registerUser(userRegisterDto: UserRegisterDto) {
-    const { roles, user } = userRegisterDto;
+    const {
+      // roles,
+      user,
+    } = userRegisterDto;
 
     const salt = await genSalt(10);
     const hashedPassword = await hash(
@@ -30,10 +33,10 @@ export class AuthService {
       password: hashedPassword,
     });
 
-    const userRoles = await this.roleAssignmentService.createRoleAssignment(
-      roles,
-      userObj.id,
-    );
+    // const userRoles = await this.roleAssignmentService.createRoleAssignment(
+    //   roles,
+    //   userObj.id,
+    // );
 
     const payload: JwtPayloadDto = {
       id: userObj.id,
@@ -51,7 +54,7 @@ export class AuthService {
     });
 
     await this.refreshTokenService.createRefreshToken({
-      user: userObj,
+      userId: userObj.id,
       token: refreshToken,
     });
 
@@ -96,7 +99,7 @@ export class AuthService {
     });
 
     await this.refreshTokenService.createRefreshToken({
-      user: user,
+      userId: user.id,
       token: refreshToken,
     });
 
