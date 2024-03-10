@@ -6,15 +6,14 @@ import {
   Post,
   Req,
   Res,
+  UnauthorizedException,
   UseGuards,
 } from '@nestjs/common';
 import { Request, Response } from 'express';
 import { UserLoginDto, UserRegisterDto } from './dto';
 import { AuthService } from './auth.service';
 import { AuthGuard } from '../../guards/auth.guard';
-import { PermissionGuard } from '../../guards/permission.guard';
-import { Permissions } from '../../decorators/permission.decorator';
-import { PERMISSIONS } from '../../enums/permissions';
+import { UserDto } from '../user/dto/index';
 
 @Controller('auth')
 export class AuthController {
@@ -22,7 +21,6 @@ export class AuthController {
 
   // @Permissions(PERMISSIONS.GET_ALL_ROLES)
   // @UseGuards(PermissionGuard)
-  // @UseGuards(AuthGuard)
   @Post('register')
   async register(
     @Res({ passthrough: true }) res: Response,
@@ -54,8 +52,8 @@ export class AuthController {
     return { user, accessToken };
   }
 
-  @Permissions(PERMISSIONS.GET_ALL_ROLES)
   @HttpCode(200)
+  @UseGuards(AuthGuard)
   @Post('logout')
   async logout(@Req() req: Request) {
     const refreshToken = req.cookies['refreshToken'];
@@ -67,12 +65,32 @@ export class AuthController {
     return 'You successfully logout from your account';
   }
 
+  @UseGuards(AuthGuard)
+  @HttpCode(200)
   @Get('refresh')
-  async refresh() {}
+  async refresh(
+    @Req() req: Request,
+    @Res({ passthrough: true }) res: Response,
+  ) {
+    const cookieRefreshToken = req.cookies['refreshToken'];
+    const userReq: UserDto = req['user'];
+    if (!cookieRefreshToken)
+      throw new UnauthorizedException('refresh token is empty');
+
+    const { user, refreshToken, accessToken } =
+      await this.authService.refreshToken(cookieRefreshToken, userReq.id);
+
+    res.clearCookie('refreshToken');
+    res.cookie('refreshToken', refreshToken, {
+      httpOnly: true,
+    });
+
+    return { user, accessToken };
+  }
 
   @UseGuards(AuthGuard)
   @Get('test')
-  async test(@Req() req: Request) {
+  async test() {
     // console.log('test', req['user']);
   }
 }
