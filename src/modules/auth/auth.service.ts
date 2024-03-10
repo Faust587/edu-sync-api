@@ -113,4 +113,36 @@ export class AuthService {
   async logoutUser(refreshToken: string) {
     return this.refreshTokenService.deleteByTokenName(refreshToken);
   }
+
+  async refreshToken(refreshToken: string, userId: string) {
+    this.refreshTokenService.deleteByTokenName(refreshToken);
+
+    const user = await this.userService.getById(userId);
+
+    const payload: JwtPayloadDto = {
+      id: user.id,
+      isEmailActivated: user.isEmailActivated,
+    };
+
+    const accessToken = this.jwtService.sign(payload, {
+      expiresIn: process.env.ACCESS_TOKEN_EXP,
+      secret: process.env.JWT_SECRET,
+    });
+
+    const newRefreshToken = this.jwtService.sign(payload, {
+      expiresIn: process.env.REFRESH_TOKEN_EXP,
+      secret: process.env.JWT_SECRET,
+    });
+
+    await this.refreshTokenService.createRefreshToken({
+      userId: user.id,
+      token: newRefreshToken,
+    });
+
+    return {
+      user,
+      accessToken,
+      refreshToken: newRefreshToken,
+    };
+  }
 }
